@@ -26,6 +26,7 @@ public class CalculatorClient {
                         calc.pushOperation(esratSession, "min");
                         System.out.println("Result from another client's stack: " + calc.pop(esratSession));
 
+                        // ------ Register more user like above if you want ---------
                 } catch (Exception e) {
                         e.printStackTrace();
                 }
