@@ -27,6 +27,7 @@ public class CalculatorTest {
 
     @Test
     @Order(1)
+    // testing pushValue and pop
     public void testPushAndPopPerClient() throws Exception {
         calc.pushValue(sessionA, 42);
         assertFalse(calc.isEmpty(sessionA));
