@@ -3,6 +3,8 @@
 This project implements a distributed calculator using **Java RMI** where **each client has its own stack** on the server accessed by their own id.
 Follow this readme to compile, start the RMI registry and server, run clients, and simulate multiple clients...
 
+Github: https://github.com/sakibesrat71/distributed_computing_uni_adelaide/tree/Java-RMI-assi-1/assi%201 
+
 ---
 
 ## 1. Compile All Java Files
