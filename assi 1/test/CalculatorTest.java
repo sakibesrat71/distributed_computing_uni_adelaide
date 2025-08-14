@@ -27,7 +27,7 @@ public class CalculatorTest {
 
     @Test
     @Order(1)
-    // testing pushValue and pop
+    // testing pushValue and pop and isEmpty
     public void testPushAndPopPerClient() throws Exception {
         calc.pushValue(sessionA, 42);
         assertFalse(calc.isEmpty(sessionA));
@@ -41,7 +41,7 @@ public class CalculatorTest {
 
     @Test
     @Order(2)
-    public void testMinOperationIsolation() throws Exception {
+    public void testPushOperation() throws Exception {
         calc.pushValue(sessionA, 5);
         calc.pushValue(sessionA, 2);
         calc.pushValue(sessionA, 9);
@@ -53,7 +53,7 @@ public class CalculatorTest {
 
     @Test
     @Order(3)
-    public void testMaxOperationIsolation() throws Exception {
+    public void testMaxOperation() throws Exception {
         calc.pushValue(sessionB, 1);
         calc.pushValue(sessionB, 50);
         calc.pushValue(sessionB, 10);
