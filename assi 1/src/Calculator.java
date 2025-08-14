@@ -1,30 +1,21 @@
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-// Calculator is the Remote interface that defines thee basic operations
+// Remote interface for a Calculator that gives each client its own stack.
 
 public interface Calculator extends Remote {
 
-    // Pushes an integer value onto the stack.
+    // Registers a new client session and gives an unique session ID.
 
-    void pushValue(int val) throws RemoteException;
+    String registerClient() throws RemoteException;
 
+    void pushValue(String sessionId, int val) throws RemoteException;
 
-     // Pushes an operation into the stack and calculates it.
-     // Operations: min,max, lcm, gcd
-    void pushOperation(String operator) throws RemoteException;
+    void pushOperation(String sessionId, String operator) throws RemoteException;
 
+    int pop(String sessionId) throws RemoteException;
 
-     // Pops and returns the top value from the stack.
+    boolean isEmpty(String sessionId) throws RemoteException;
 
-    int pop() throws RemoteException;
-
-
-     // Returns true if the stack is empty.
-
-    boolean isEmpty() throws RemoteException;
-
-    // Waits the given number of milliseconds before popping and returning the top of the stack.
-
-    int delayPop(int millis) throws RemoteException, InterruptedException;
+    int delayPop(String sessionId, int millis) throws RemoteException, InterruptedException;
 }

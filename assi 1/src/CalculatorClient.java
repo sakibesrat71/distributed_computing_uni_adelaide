@@ -1,33 +1,33 @@
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-// CalculatorClient connects to the Calculator RMI service and tests its operations.
-
 public class CalculatorClient {
-    public static void main(String[] args) throws RemoteException, NotBoundException, InterruptedException {
+        public static void main(String[] args) {
+                try {
+                        Registry registry = LocateRegistry.getRegistry("localhost", 1099);
+                        Calculator calc = (Calculator) registry.lookup("CalculatorService");
 
-            Registry registry = LocateRegistry.getRegistry("localhost", 1099);
-            Calculator calc = (Calculator) registry.lookup("CalculatorService");
+                        // Sakib registers
+                        String sakibSession = calc.registerClient();
+                        System.out.println("Sakib's ID: " + sakibSession);
 
-            // Test push and pop
-            calc.pushValue(42);
-            calc.pushValue(38);
-            calc.pushOperation("max");
-            System.out.println("Pop after max: " + calc.pop());
+                        // Work on my own stack
+                        calc.pushValue(sakibSession, 10);
+                        calc.pushValue(sakibSession, 20);
+                        calc.pushOperation(sakibSession, "max");
+                        System.out.println("Result from Sakib's: " + calc.pop(sakibSession));
 
-            // Test lcm
-            calc.pushValue(44);
-            calc.pushValue(66);
-            calc.pushValue(89);
-            calc.pushOperation("lcm");
-            System.out.println("LCM result: " + calc.pop());
+                        // Esrat Registers
+                        String esratSession = calc.registerClient();
+                        System.out.println("Esrat's ID: " + esratSession);
+                        
+                        calc.pushValue(esratSession, 5);
+                        calc.pushValue(esratSession, 15);
+                        calc.pushOperation(esratSession, "min");
+                        System.out.println("Result from another client's stack: " + calc.pop(esratSession));
 
-            // Test delayPop
-            calc.pushValue(99);
-            System.out.println("Delayed pop (2s): " + calc.delayPop(2000));
-
-
-    }
+                } catch (Exception e) {
+                        e.printStackTrace();
+                }
+        }
 }

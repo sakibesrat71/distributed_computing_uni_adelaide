@@ -9,110 +9,133 @@ import static org.junit.jupiter.api.Assertions.*;
 public class CalculatorTest {
 
     private static Calculator calc;
+    private static String sessionA;
+    private static String sessionB;
 
     @BeforeAll
     public static void setup() throws Exception {
-        // Connecting RMI and looking up service
+        // Connect to RMI registry
         Registry registry = LocateRegistry.getRegistry("localhost", 1099);
         calc = (Calculator) registry.lookup("CalculatorService");
 
-        // Clear the stack to avoid weird behaviour
-        while (!calc.isEmpty()) {
-            calc.pop();
-        }
+        // Register two separate clients
+        sessionA = calc.registerClient();
+        sessionB = calc.registerClient();
+        System.out.println("Session A: " + sessionA);
+        System.out.println("Session B: " + sessionB);
     }
 
     @Test
     @Order(1)
-    public void testPushAndPopSingleClient() throws Exception {
-        calc.pushValue(42);
-        assertFalse(calc.isEmpty(), "Stack should not be empty after push");
-        int popped = calc.pop();
-        assertEquals(42, popped, "Popped value should match pushed value");
-        assertTrue(calc.isEmpty(), "Stack should be empty");
+    public void testPushAndPopPerClient() throws Exception {
+        calc.pushValue(sessionA, 42);
+        assertFalse(calc.isEmpty(sessionA));
+        assertTrue(calc.isEmpty(sessionB)); // B should still be empty
+
+        int val = calc.pop(sessionA);
+        assertEquals(42, val);
+        assertTrue(calc.isEmpty(sessionA));
+        assertTrue(calc.isEmpty(sessionB));
     }
 
     @Test
     @Order(2)
-    public void testMinOperation() throws Exception {
-        calc.pushValue(5);
-        calc.pushValue(2);
-        calc.pushValue(9);
-        calc.pushOperation("min");
-        assertEquals(2, calc.pop(), "Min of (5,2,9) should be 2");
+    public void testMinOperationIsolation() throws Exception {
+        calc.pushValue(sessionA, 5);
+        calc.pushValue(sessionA, 2);
+        calc.pushValue(sessionA, 9);
+        calc.pushOperation(sessionA, "min");
+        assertEquals(2, calc.pop(sessionA));
+
+        assertTrue(calc.isEmpty(sessionB)); // Still untouched
     }
 
     @Test
     @Order(3)
-    public void testMaxOperation() throws Exception {
-        calc.pushValue(1);
-        calc.pushValue(50);
-        calc.pushValue(10);
-        calc.pushOperation("max");
-        assertEquals(50, calc.pop(), "Max of (1,50,10) should be 50");
+    public void testMaxOperationIsolation() throws Exception {
+        calc.pushValue(sessionB, 1);
+        calc.pushValue(sessionB, 50);
+        calc.pushValue(sessionB, 10);
+        calc.pushOperation(sessionB, "max");
+        assertEquals(50, calc.pop(sessionB));
+
+        assertTrue(calc.isEmpty(sessionA)); // A is unaffected
     }
 
     @Test
     @Order(4)
-    public void testLcmOperation() throws Exception {
-        calc.pushValue(4);
-        calc.pushValue(6);
-        calc.pushValue(8);
-        calc.pushOperation("lcm");
-        assertEquals(24, calc.pop(), "LCM of (4,6,8) should be 24");
+    public void testLcmAndGcdPerClient() throws Exception {
+        // Client A tests LCM
+        calc.pushValue(sessionA, 4);
+        calc.pushValue(sessionA, 6);
+        calc.pushValue(sessionA, 8);
+        calc.pushOperation(sessionA, "lcm");
+        assertEquals(24, calc.pop(sessionA));
+
+        // Client B tests GCD
+        calc.pushValue(sessionB, 54);
+        calc.pushValue(sessionB, 24);
+        calc.pushOperation(sessionB, "gcd");
+        assertEquals(6, calc.pop(sessionB));
     }
 
     @Test
     @Order(5)
-    public void testGcdOperation() throws Exception {
-        calc.pushValue(54);
-        calc.pushValue(24);
-        calc.pushOperation("gcd");
-        assertEquals(6, calc.pop(), "GCD of (54,24) should be 6");
+    public void testDelayPopPerClient() throws Exception {
+        calc.pushValue(sessionA, 99);
+        long start = System.currentTimeMillis();
+        int result = calc.delayPop(sessionA, 1000);
+        long elapsed = System.currentTimeMillis() - start;
+
+        assertEquals(99, result);
+        assertTrue(elapsed >= 1000);
+        assertTrue(calc.isEmpty(sessionA));
     }
 
     @Test
     @Order(6)
-    public void testDelayPop() throws Exception {
-        calc.pushValue(99);
-        long start = System.currentTimeMillis();
-        int value = calc.delayPop(1000);
-        long elapsed = System.currentTimeMillis() - start;
-        assertEquals(99, value, "Value should match pushed value");
-        assertTrue(elapsed >= 1000, "delayPop should wait at least 1 second");
-    }
+    public void testMultipleClientsConcurrently() throws Exception {
+        ExecutorService executor = Executors.newFixedThreadPool(4);
 
-    @Test
-    @Order(7)
-    public void testMultipleClients() throws Exception {
-        ExecutorService executor = Executors.newFixedThreadPool(3);
-
-        Runnable clientTask = () -> {
+        Runnable clientATask = () -> {
             try {
-                Registry registry = LocateRegistry.getRegistry("localhost", 1099);
-                Calculator localCalc = (Calculator) registry.lookup("CalculatorService");
                 for (int i = 0; i < 3; i++) {
-                    localCalc.pushValue(i + 1);
+                    calc.pushValue(sessionA, i + 1);
                 }
             } catch (Exception e) {
-                fail("Client thread failed: " + e.getMessage());
+                fail("Client A thread failed: " + e.getMessage());
             }
         };
 
-        // Spawn 3 clients
-        for (int i = 0; i < 3; i++) {
-            executor.submit(clientTask);
-        }
+        Runnable clientBTask = () -> {
+            try {
+                for (int i = 10; i < 13; i++) {
+                    calc.pushValue(sessionB, i);
+                }
+            } catch (Exception e) {
+                fail("Client B thread failed: " + e.getMessage());
+            }
+        };
+
+        executor.submit(clientATask);
+        executor.submit(clientBTask);
         executor.shutdown();
         executor.awaitTermination(5, TimeUnit.SECONDS);
 
-        // There should be exactly 9 values in total
-        int count = 0;
-        while (!calc.isEmpty()) {
-            calc.pop();
-            count++;
+        // Validate Client A’s stack
+        int countA = 0;
+        while (!calc.isEmpty(sessionA)) {
+            calc.pop(sessionA);
+            countA++;
         }
+        assertEquals(3, countA);
 
-        assertEquals(9, count, "Expected stack to have 9 items pushed by 3 clients");
+        // Validate Client B’s stack
+        int countB = 0;
+        while (!calc.isEmpty(sessionB)) {
+            calc.pop(sessionB);
+            countB++;
+        }
+        assertEquals(3, countB);
     }
 }
