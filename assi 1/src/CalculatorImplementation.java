@@ -2,9 +2,8 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Stack;
 
-/**
- * Implementation of the Calculator interface.
- */
+
+ // Implementation of the Calculator interface.
 public class CalculatorImplementation extends UnicastRemoteObject implements Calculator {
 
     private Stack<Integer> stack;
@@ -12,6 +11,8 @@ public class CalculatorImplementation extends UnicastRemoteObject implements Cal
     protected CalculatorImplementation() throws RemoteException {
         stack = new Stack<>();
     }
+
+    // Synchronized is used to handle multiple clients
     @Override
     public synchronized void pushValue(int val) throws RemoteException {
         stack.push(val);

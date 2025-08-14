@@ -2,10 +2,9 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-/**
- * CalculatorServer opens a RMI registry -> exports the calc,
- * and binds it to the registry with the name "CalculatorService".
- */
+// CalculatorServer opens a RMI registry -> exports the calc,
+// and binds it to the registry with the name "CalculatorService".
+
 public class CalculatorServer {
     public static void main(String[] args) throws RemoteException {
 

@@ -3,9 +3,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-/**
- * CalculatorClient connects to the Calculator RMI service and tests its operations.
- */
+// CalculatorClient connects to the Calculator RMI service and tests its operations.
+
 public class CalculatorClient {
     public static void main(String[] args) throws RemoteException, NotBoundException, InterruptedException {
 
