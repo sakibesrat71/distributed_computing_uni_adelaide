@@ -59,7 +59,7 @@ public class ContentServer {
             String statusLine = in.readLine();
             System.out.println("Server response: " + statusLine);
 
-            
+
 
             // Close connections
             in.close();
