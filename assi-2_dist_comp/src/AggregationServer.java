@@ -1,11 +1,26 @@
+import java.io.*;
+import java.net.*;
+import java.util.Arrays;
+
 public class AggregationServer {
     public static void main(String[] args) {
-        // Parse port from args, start server
-        // Listen for incoming connections (PUT/GET)
-        // Initialize LamportClock and data store
+        int port = 4567;
+        if (args.length > 0) {
+            port = Integer.parseInt(args[0]);
+        }
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
+            System.out.println("Aggregation Server listening on port " + port);
+            while (true) {
+                Socket clientSocket = serverSocket.accept();
+                // Basic placeholder for handling the client
+                new Thread(() -> handleClient(clientSocket)).start();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
-    // Method to handle GET and PUT requests
-    // Method to serialize/deserialize JSON data
-    // Method for crash recovery
-    // Method to expire stale entries
+
+    static void handleClient(Socket socket) {
+        // TODO: Read/write from socket streams, parse request (GET/PUT)
+    }
 }
