@@ -38,10 +38,10 @@ public class ContentServer {
             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-            // Update Lamport clock for send event
+            // Lamport clock tick before sending request
             lamportClock.tick();
 
-            // Build PUT request
+            // Build PUT request string
             StringBuilder request = new StringBuilder();
             request.append("PUT /weather.json HTTP/1.1\r\n");
             request.append("User-Agent: ContentServer/1.0\r\n");
@@ -51,15 +51,15 @@ public class ContentServer {
             request.append("\r\n");
             request.append(jsonPayload);
 
-            // Send request
+            // Send PUT request
             out.write(request.toString());
             out.flush();
 
-            // Read response status line
+            // Read and print the first response line (status)
             String statusLine = in.readLine();
             System.out.println("Server response: " + statusLine);
 
-
+            // Optionally read remaining headers or body here
 
             // Close connections
             in.close();
@@ -71,29 +71,27 @@ public class ContentServer {
         }
     }
 
-    // Simple method to convert key:value pairs to JSON string format
-    // For the assignment, you could extend or replace this with a JSON library later
+    // Converts colon separated key:value pairs into JSON formatted string (naive)
     private static String convertToJson(String fileContent) {
         StringBuilder json = new StringBuilder("{\n");
         String[] lines = fileContent.split("\n");
         for (String line : lines) {
             String[] kv = line.split(":", 2);
             if (kv.length != 2) {
-                continue; // ignore bad lines
+                continue; // skip invalid lines
             }
             String key = kv[0].trim();
             String value = kv[1].trim();
 
-            // Quote value if it is non-numeric or contains spaces
-            if (!value.matches("[-+]?\\d*\\.?\\d+") && !value.equalsIgnoreCase("true") && !value.equalsIgnoreCase("false")) {
+            // Quote value if non-numeric and not boolean
+            if (!value.matches("[-+]?[0-9]*\\.?[0-9]+") && !value.equalsIgnoreCase("true") && !value.equalsIgnoreCase("false")) {
                 value = "\"" + value + "\"";
             }
 
             json.append("  \"").append(key).append("\": ").append(value).append(",\n");
         }
-        if (json.length() > 2) {
-            json.setLength(json.length() - 2); // remove last comma
-        }
+        if (json.length() > 2)
+            json.setLength(json.length() - 2); // Remove trailing comma and newline
         json.append("\n}");
         return json.toString();
     }
