@@ -72,9 +72,9 @@ java ContentServer serverHost:port <path-to-weather-file>
 
 
 - Example:
-
+````
 java ContentServer localhost:4567 weather_input1.txt
-
+````
 
 ContentServer reads the input file, converts data to JSON, and sends a PUT request.
 
@@ -88,9 +88,9 @@ java GETClient serverHost:port
 
 
 - Example:
-
+````
 java GETClient localhost:4567
-
+````
 
 GETClient sends a GET request and prints each weather entry received.
 
@@ -169,10 +169,4 @@ Use the included `ConcurrentContentServerLauncher` to launch multiple ContentSer
 
 ---
 
-## Contact
 
-For questions or help, please refer to your course staff or project documentation.
-
----
-
-*This README summarizes key information to help run and test the distributed weather aggregation system effectively.*
