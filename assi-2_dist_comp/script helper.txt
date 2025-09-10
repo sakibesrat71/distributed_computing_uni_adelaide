@@ -1,0 +1,8 @@
+Run AggregationServer from intellij
+
+Run Content Server: java ContentServer localhost:4567 weather_input.txt
+OPTIONALLY USE ConccurrentServerLauncher.java TO SIMULATE MULTIPLE CONTENT SERVERS. SIMPLY ADD EXTRA weather_input.txt  FILES IN THE TOP LEVEL OF THE FOLDER WHERE THERE IS .gitignore AND PRESS RUN IN INTELLIJ FOR THE ConccurrentServerLauncher.java FILE.  
+
+WITHIN  30 SEC RUN THE FOLLOWING CMD TO GET THE weather_input - 
+Run GetClient : java GETClient localhost:4567
+
