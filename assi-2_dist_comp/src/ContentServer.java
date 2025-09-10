@@ -29,7 +29,6 @@ public class ContentServer {
         // Initial send from file
         sendWeatherDataFromFile(dataFile);
 
-        // You can add watch or manual triggers to reread dataFile periodically or on update
     }
 
     private static void sendWeatherDataFromFile(String filePath) {

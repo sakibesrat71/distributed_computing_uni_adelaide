@@ -87,7 +87,7 @@ public class GETClient {
         }
     }
 
-    // Existing parseAndPrintJsonArray and parseAndPrintJson methods unchanged...
+
     public static void parseAndPrintJsonArray(String json) {
         json = json.trim();
         if (!json.startsWith("[") || !json.endsWith("]")) {

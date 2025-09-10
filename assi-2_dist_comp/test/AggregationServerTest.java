@@ -21,7 +21,7 @@ public class AggregationServerTest {
         serverThread.setDaemon(true);
         serverThread.start();
 
-        // Wait for server to start accepting connections (simple sleep for brevity)
+        // Wait for server to start accepting connections
         try {
             Thread.sleep(1500);
         } catch (InterruptedException ignored) {}

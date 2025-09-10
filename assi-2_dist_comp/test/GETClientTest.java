@@ -6,10 +6,8 @@ public class GETClientTest {
     @Test
     public void testParseAndPrintJson_ValidObject() {
         String json = "{\"id\":\"server1\",\"temp\":\"23\"}";
-        // Redirect stdout or implement printable capture if needed
-        // For now, test the parsing method returns expected key-values via helper
 
-        // Adapt GETClient.parseAndPrintJson() to return a Map for test purposes (suggestion)
+
     }
 
 
@@ -17,8 +15,7 @@ public class GETClientTest {
     @Test
     public void testParseAndPrintJson_ValidJsonObject() {
         String json = "{\"id\":\"server1\",\"temp\":\"23\"}";
-        // For better testing, refactor GETClient parse method to return Map or List
-        // Here we just check no exception is thrown
+
         try {
             GETClient.parseAndPrintJson(json);
         } catch (Exception e) {

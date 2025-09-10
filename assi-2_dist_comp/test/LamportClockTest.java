@@ -22,7 +22,7 @@ public class LamportClockTest {
     public void testUpdateAdvancesClock() {
         LamportClock clock = new LamportClock();
         clock.tick();  // clock = 1
-        clock.update(5); // should set clock to 6
+        clock.update(5);
         assertEquals(6, clock.get());
     }
 
@@ -31,7 +31,7 @@ public class LamportClockTest {
         LamportClock clock = new LamportClock();
         clock.update(10);
         int before = clock.get();
-        clock.update(5); // ignored because 5 < 10
+        clock.update(5); 
         assertEquals(before+1, clock.get());
     }
 }
