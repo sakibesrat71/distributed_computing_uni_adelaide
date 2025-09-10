@@ -11,6 +11,8 @@ public class AggregationServer {
     private static final LamportClock lamportClock = new LamportClock();
     private static final Object lock = new Object();
 
+
+
     private static final long EXPIRY_TIME_MS = 30_000;  // 30 seconds expiry
 
     public static void main(String[] args) {
@@ -18,6 +20,8 @@ public class AggregationServer {
         if (args.length > 0) {
             port = Integer.parseInt(args[0]);
         }
+
+
 
         // Start cleaner thread to expire stale content servers
         Thread cleaner = new Thread(() -> {
@@ -43,6 +47,19 @@ public class AggregationServer {
             e.printStackTrace();
         }
     }
+    static Map<String, String> getWeatherDataMap() {
+        return weatherDataMap;
+    }
+
+    static Map<String, Long> getContentServerLastContact() {
+        return contentServerLastContact;
+    }
+
+    // Getter for lamportClock
+    static LamportClock getLamportClock() {
+        return lamportClock;
+    }
+
 
     static void cleanExpiredEntries() {
         long now = System.currentTimeMillis();
@@ -186,7 +203,7 @@ public class AggregationServer {
         }
     }
 
-    private static String extractIdFromJson(String json) {
+     static String extractIdFromJson(String json) {
         Pattern pattern = Pattern.compile("\"id\"\\s*:\\s*\"([^\"]+)\"");
         Matcher matcher = pattern.matcher(json);
         if (matcher.find()) {
@@ -194,6 +211,7 @@ public class AggregationServer {
         }
         return null;
     }
+
 
     private static void sendResponse(BufferedWriter out, int statusCode, String statusMessage, String body)
             throws IOException {
