@@ -2,14 +2,15 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 public class LamportClockTest {
+
     @Test
-    public void testInitialClock() {
+    public void testInitialValue() {
         LamportClock clock = new LamportClock();
         assertEquals(0, clock.get());
     }
 
     @Test
-    public void testTickIncrement() {
+    public void testTickIncrements() {
         LamportClock clock = new LamportClock();
         clock.tick();
         assertEquals(1, clock.get());
@@ -18,13 +19,19 @@ public class LamportClockTest {
     }
 
     @Test
-    public void testUpdateClock() {
+    public void testUpdateAdvancesClock() {
         LamportClock clock = new LamportClock();
-        clock.tick();
-        clock.update(10);
-        assertEquals(11, clock.get());
+        clock.tick();  // clock = 1
+        clock.update(5); // should set clock to 6
+        assertEquals(6, clock.get());
+    }
 
-        clock.update(5);
-        assertEquals(12, clock.get()); // Should not decrease
+    @Test
+    public void testUpdateDoesNotDecreaseClock() {
+        LamportClock clock = new LamportClock();
+        clock.update(10);
+        int before = clock.get();
+        clock.update(5); // ignored because 5 < 10
+        assertEquals(before+1, clock.get());
     }
 }

@@ -224,7 +224,7 @@ public class AggregationServer {
         out.flush();
     }
 
-    private static void persistData() {
+     static void persistData() {
         synchronized (lock) {
             try {
                 StringBuilder sb = new StringBuilder("[\n");

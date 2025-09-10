@@ -81,7 +81,7 @@ public class GETClient {
     }
 
     // Naive parser: expects JSON array of objects, parses and prints each object's key-values line-by-line
-    private static void parseAndPrintJsonArray(String json) {
+     static void parseAndPrintJsonArray(String json) {
         json = json.trim();
         if (!json.startsWith("[") || !json.endsWith("]")) {
             System.out.println("Invalid JSON format");
@@ -107,7 +107,7 @@ public class GETClient {
     }
 
     // Similar naive parser for single JSON object
-    private static void parseAndPrintJson(String json) {
+     static void parseAndPrintJson(String json) {
         json = json.trim();
         if (!json.startsWith("{") || !json.endsWith("}")) {
             System.out.println("Invalid JSON format");
