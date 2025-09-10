@@ -72,7 +72,7 @@ public class ContentServer {
     }
 
     // Converts colon separated key:value pairs into JSON formatted string (naive)
-    private static String convertToJson(String fileContent) {
+    public  static String convertToJson(String fileContent) {
         StringBuilder json = new StringBuilder("{\n");
         String[] lines = fileContent.split("\n");
         for (String line : lines) {
