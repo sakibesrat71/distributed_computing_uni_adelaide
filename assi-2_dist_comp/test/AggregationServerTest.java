@@ -1,8 +1,31 @@
 import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.*;
+import java.net.Socket;
+
 public class AggregationServerTest {
+
+    @BeforeAll
+    public static void startServer() {
+        Thread serverThread = new Thread(() -> {
+            try {
+                AggregationServer.main(new String[]{"4567"});
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        serverThread.setDaemon(true);
+        serverThread.start();
+
+        // Wait for server to start accepting connections (simple sleep for brevity)
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException ignored) {}
+    }
 
     @BeforeEach
     public void setUp() {
@@ -15,6 +38,49 @@ public class AggregationServerTest {
     public void cleanMaps() {
         AggregationServer.getWeatherDataMap().clear();
         AggregationServer.getContentServerLastContact().clear();
+    }
+
+
+
+    @Test
+    public void testAggregationServerRejectsInvalidJson() throws IOException {
+        try (Socket socket = new Socket("localhost", 4567);
+             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+
+            String badJson = "{\"id\":\"server1\", \"temp\": 25"; // missing closing brace
+
+            String request = "PUT /weather.json HTTP/1.1\r\n" +
+                    "Content-Length: " + badJson.length() + "\r\n" +
+                    "\r\n" +
+                    badJson;
+
+            out.write(request);
+            out.flush();
+
+            String responseLine = in.readLine();
+            assertNotNull(responseLine);
+            assertTrue(responseLine.contains("500"), "Expected 500 response, got: " + responseLine);
+        }
+    }
+
+    @Test
+    public void testServerReturns204OnEmptyPut() throws IOException {
+        try (Socket socket = new Socket("localhost", 4567);
+             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+
+            String request = "PUT /weather.json HTTP/1.1\r\n" +
+                    "Content-Length: 0\r\n" +
+                    "\r\n";
+
+            out.write(request);
+            out.flush();
+
+            String responseLine = in.readLine();
+            assertNotNull(responseLine);
+            assertTrue(responseLine.contains("204"), "Expected 204 response, got: " + responseLine);
+        }
     }
 
     @Test
@@ -100,4 +166,46 @@ public class AggregationServerTest {
         // Cleanup
         file.delete();
     }
+
+    @Test
+    public void testAggregationServerRejectsMalformedJson() throws Exception {
+        // connect directly using socket and send bad JSON in PUT
+        Socket socket = new Socket("localhost", 4567);
+        BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+        String badJson = "{ \"id\": \"server1\", \"temp\": 25 ";  // missing closing brace
+
+        String request = "PUT /weather.json HTTP/1.1\r\n" +
+                "Content-Length: " + badJson.length() + "\r\n" +
+                "\r\n" +
+                badJson;
+        out.write(request);
+        out.flush();
+
+        String response = in.readLine();
+        socket.close();
+
+        assertTrue(response.contains("500"));
+    }
+
+    @Test
+    public void testAggregationServerReturns204OnEmptyPut() throws Exception {
+        Socket socket = new Socket("localhost", 4567);
+        BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+        String request = "PUT /weather.json HTTP/1.1\r\n" +
+                "Content-Length: 0\r\n" +
+                "\r\n";
+        out.write(request);
+        out.flush();
+
+        String response = in.readLine();
+        socket.close();
+
+        assertTrue(response.contains("204"));
+    }
+
+
 }

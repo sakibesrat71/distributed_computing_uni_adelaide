@@ -61,6 +61,10 @@ public class ContentServer {
         }
     }
 
+    public static Integer getMaxRetry() {
+        return MAX_RETRIES;
+    }
+
     private static void resendBackup() {
         try {
             if (!Files.exists(Path.of(BACKUP_FILE))) {
@@ -74,7 +78,7 @@ public class ContentServer {
         }
     }
 
-    private static void sendPutRequest(String serverInfo, String jsonPayload) throws IOException {
+     static void sendPutRequest(String serverInfo, String jsonPayload) throws IOException {
         String[] parts = serverInfo.split(":");
         String host = parts[0];
         int port = Integer.parseInt(parts[1]);
