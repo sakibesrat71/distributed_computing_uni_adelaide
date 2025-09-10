@@ -3,29 +3,48 @@ import java.net.*;
 
 public class GETClient {
     private static LamportClock lamportClock = new LamportClock();
+    private static final int MAX_RETRIES = 5;
+    private static final long RETRY_DELAY_MS = 1000; // 1 second
 
     public static void main(String[] args) {
         if (args.length < 1) {
-            System.out.println("Usage: GETClient <server:port> [stationID]");
+            System.out.println("Usage: GETClient <server:port>");
             return;
         }
 
         String serverInfo = args[0];
-        // stationID currently not implemented, but can be used to filter
 
-        try {
-            String[] parts = serverInfo.split(":");
-            String host = parts[0];
-            int port = Integer.parseInt(parts[1]);
+        for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                sendGetRequest(serverInfo);
+                break; // success
+            } catch (IOException e) {
+                System.err.println("Attempt " + attempt + " failed: " + e.getMessage());
+                if (attempt == MAX_RETRIES) {
+                    System.err.println("Max retries reached. Giving up.");
+                } else {
+                    try {
+                        Thread.sleep(RETRY_DELAY_MS);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                }
+            }
+        }
+    }
 
-            Socket socket = new Socket(host, port);
+    private static void sendGetRequest(String serverInfo) throws IOException {
+        String[] parts = serverInfo.split(":");
+        String host = parts[0];
+        int port = Integer.parseInt(parts[1]);
 
-            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        try (Socket socket = new Socket(host, port);
+             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
             lamportClock.tick();
 
-            // Build GET request string
             StringBuilder request = new StringBuilder();
             request.append("GET /weather.json HTTP/1.1\r\n");
             request.append("User-Agent: GETClient/1.0\r\n");
@@ -38,7 +57,6 @@ public class GETClient {
             String statusLine = in.readLine();
             System.out.println("Server response: " + statusLine);
 
-            // Read headers
             String line;
             int contentLength = 0;
             while (!(line = in.readLine()).equals("")) {
@@ -53,41 +71,29 @@ public class GETClient {
                             int receivedLamport = Integer.parseInt(value);
                             lamportClock.update(receivedLamport);
                         } catch (NumberFormatException e) {
-                            // ignore
+                            // ignore bad lamport clock
                         }
                     }
                 }
             }
 
-            // Read JSON body into char array
             char[] bodyChars = new char[contentLength];
             int read = in.read(bodyChars, 0, contentLength);
             if (read < contentLength) {
                 System.err.println("Incomplete response body");
-                socket.close();
-                return;
             }
             String jsonBody = new String(bodyChars);
-
             parseAndPrintJsonArray(jsonBody);
-
-            in.close();
-            out.close();
-            socket.close();
-
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
-    // Naive parser: expects JSON array of objects, parses and prints each object's key-values line-by-line
-     static void parseAndPrintJsonArray(String json) {
+    // Existing parseAndPrintJsonArray and parseAndPrintJson methods unchanged...
+    public static void parseAndPrintJsonArray(String json) {
         json = json.trim();
         if (!json.startsWith("[") || !json.endsWith("]")) {
             System.out.println("Invalid JSON format");
             return;
         }
-        // Remove [ ] and split objects by "}," (assuming no nested objects)
         String arrayContent = json.substring(1, json.length() - 1).trim();
         if (arrayContent.isEmpty()) {
             System.out.println("Empty weather data");
@@ -106,15 +112,13 @@ public class GETClient {
         }
     }
 
-    // Similar naive parser for single JSON object
-     static void parseAndPrintJson(String json) {
+    public static void parseAndPrintJson(String json) {
         json = json.trim();
         if (!json.startsWith("{") || !json.endsWith("}")) {
             System.out.println("Invalid JSON format");
             return;
         }
-        json = json.substring(1, json.length() - 1).trim(); // remove braces
-        // Split by commas not in quotes
+        json = json.substring(1, json.length() - 1).trim();
         String[] pairs = json.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
 
         for (String pair : pairs) {
