@@ -13,13 +13,15 @@ public class AggregationServer {
 
 
 
-    private static final long EXPIRY_TIME_MS = 30_000;  // 30 seconds expiry
+    private static final long EXPIRY_TIME_MS =30_000;  // 30 seconds expiry
 
     public static void main(String[] args) {
         int port = 4567;
         if (args.length > 0) {
             port = Integer.parseInt(args[0]);
         }
+
+        loadPersistedData();
 
 
 
@@ -77,6 +79,50 @@ public class AggregationServer {
             persistData();
         }
     }
+    static void loadPersistedData() {
+        File file = new File("weather.json");
+        if (!file.exists()) return;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line.trim());
+            }
+            String content = sb.toString();
+            if (content.isEmpty() || content.equals("[]")) {
+                return; // No data to load
+            }
+
+            // Remove starting [ and ending ]
+            if (content.startsWith("[") && content.endsWith("]")) {
+                content = content.substring(1, content.length() - 1);
+            } else {
+                System.err.println("Invalid JSON array format in weather.json");
+                return;
+            }
+
+            // Split entries by '},' delimiter (assuming no nested curly braces)
+            String[] jsonObjects = content.split("\\},\\s*\\{");
+
+            for (int i = 0; i < jsonObjects.length; i++) {
+                String obj = jsonObjects[i];
+                // Fix brackets because split removed them
+                if (!obj.startsWith("{")) obj = "{" + obj;
+                if (!obj.endsWith("}")) obj = obj + "}";
+
+                String id = extractIdFromJson(obj);
+                if (id != null) {
+                    weatherDataMap.put(id, obj);
+                    contentServerLastContact.put(id, System.currentTimeMillis());  // Consider the current time
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     static void handleClient(Socket socket) {
         try (

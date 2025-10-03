@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+  <net id="net1" type="http://www.pnml.org/version-2009/grammar/ptnet">
+    <name>
+      <text>Bi-Directional Corridor Control</text>
+    </name>
+    <page id="page1">
+
+      <place id="P_DIR_S">
+        <name><text>P_DIR_S</text></name>
+        <initialMarking><text>1</text></initialMarking>
+      </place>
+
+      <place id="P_DIR_N">
+        <name><text>P_DIR_N</text></name>
+        <initialMarking><text>0</text></initialMarking>
+      </place>
+
+      <place id="P_1">
+        <name><text>P_1</text></name>
+        <initialMarking><text>1</text></initialMarking>
+      </place>
+      <place id="P_2">
+        <name><text>P_2</text></name>
+        <initialMarking><text>1</text></initialMarking>
+      </place>
+      <place id="P_3">
+        <name><text>P_3</text></name>
+        <initialMarking><text>1</text></initialMarking>
+      </place>
+
+      <transition id="T_Switch_S_to_N">
+        <name><text>T_Switch_S_to_N</text></name>
+      </transition>
+
+      <transition id="T_Switch_N_to_S">
+        <name><text>T_Switch_N_to_S</text></name>
+      </transition>
+
+      <arc id="A1" source="P_DIR_S" target="T_Switch_S_to_N">
+        <type><text>normal</text></type>
+      </arc>
+      <arc id="A2" source="T_Switch_S_to_N" target="P_DIR_N">
+        <type><text>normal</text></type>
+      </arc>
+      
+      <arc id="A3" source="P_DIR_N" target="T_Switch_N_to_S">
+        <type><text>normal</text></type>
+      </arc>
+      <arc id="A4" source="T_Switch_N_to_S" target="P_DIR_S">
+        <type><text>normal</text></type>
+      </arc>
+
+      <arc id="I1" source="P_1" target="T_Switch_S_to_N">
+        <type><text>inhibitor</text></type>
+      </arc>
+      <arc id="I2" source="P_2" target="T_Switch_S_to_N">
+        <type><text>inhibitor</text></type>
+      </arc>
+      <arc id="I3" source="P_3" target="T_Switch_S_to_N">
+        <type><text>inhibitor</text></type>
+      </arc>
+      
+      <arc id="I4" source="P_1" target="T_Switch_N_to_S">
+        <type><text>inhibitor</text></type>
+      </arc>
+      <arc id="I5" source="P_2" target="T_Switch_N_to_S">
+        <type><text>inhibitor</text></type>
+      </arc>
+      <arc id="I6" source="P_3" target="T_Switch_N_to_S">
+        <type><text>inhibitor</text></type>
+      </arc>
+
+      </page>
+  </net>
+</pnml>

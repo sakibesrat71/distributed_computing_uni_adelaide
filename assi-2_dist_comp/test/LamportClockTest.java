@@ -31,7 +31,7 @@ public class LamportClockTest {
         LamportClock clock = new LamportClock();
         clock.update(10);
         int before = clock.get();
-        clock.update(5); 
+        clock.update(5);
         assertEquals(before+1, clock.get());
     }
 }
