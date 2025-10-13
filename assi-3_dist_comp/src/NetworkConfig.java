@@ -1,31 +1,31 @@
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
-public class NetworkConfig {
-    private Map<String, InetSocketAddress> memberMap;
+class NetworkConfig {
+    private final Map<String, InetSocketAddress> memberAddresses = new HashMap<>();
 
-    public NetworkConfig(String configPath) throws IOException {
-        memberMap = new HashMap<>();
-        BufferedReader br = new BufferedReader(new FileReader(configPath));
-        String line;
-        while ((line = br.readLine()) != null) {
-            String[] parts = line.trim().split(",");
-            if (parts.length == 3) {
-                String memberId = parts[0];
-                String host = parts[1];
-                int port = Integer.parseInt(parts[2]);
-                memberMap.put(memberId, new InetSocketAddress(host, port));
+    public NetworkConfig(String filename) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.trim().split(",");
+                if (parts.length == 3) {
+                    memberAddresses.put(parts[0], new InetSocketAddress(parts[1], Integer.parseInt(parts[2])));
+                }
             }
         }
-        br.close();
     }
 
     public InetSocketAddress getAddress(String memberId) {
-        return memberMap.get(memberId);
+        return memberAddresses.get(memberId);
     }
 
-    public Set<String> getAllMemberIds() {
-        return memberMap.keySet();
+    public Set<String> getMemberIds() {
+        return memberAddresses.keySet();
     }
 }

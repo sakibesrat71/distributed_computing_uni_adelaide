@@ -1,4 +1,14 @@
-public class Message {
+// Supporting classes:
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+class Message {
     public String type;
     public String senderId;
     public String proposalNum;
@@ -11,7 +21,6 @@ public class Message {
         this.proposalVal = proposalVal;
     }
 
-    // Example serialization: PREPARE:M1:3.1:M5
     public String serialize() {
         return String.join(":", type, senderId, proposalNum, proposalVal);
     }
@@ -22,3 +31,5 @@ public class Message {
         return new Message(parts[0], parts[1], parts[2], parts[3]);
     }
 }
+
+
