@@ -7,11 +7,10 @@ public class CouncilMember {
     private NetworkConfig config;
     private int myPort;
 
-    public CouncilMember(String memberId, String profile, String configPath) throws Exception {
+    public CouncilMember(String memberId, String profile, NetworkConfig config) {
         this.memberId = memberId;
         this.profile = profile;
-        this.config = new NetworkConfig(configPath);
-        this.myPort = config.getAddress(memberId).getPort();
+        this.config = config;
     }
 
     public void startServer() throws Exception {
@@ -30,6 +29,8 @@ public class CouncilMember {
         }
     }
 
+
+
     public void sendMessage(String targetMemberId, Message msg) throws Exception {
         InetSocketAddress addr = config.getAddress(targetMemberId);
         Socket socket = new Socket(addr.getHostName(), addr.getPort());
@@ -42,13 +43,30 @@ public class CouncilMember {
     }
 
     public static void main(String[] args) throws Exception {
-        if (args.length < 2) {
+        if (args.length < 3) {
             System.err.println("Usage: java CouncilMember <MemberId> --profile <profile>");
             System.exit(1);
         }
         String memberId = args[0];
         String profile = args[2];
-        CouncilMember member = new CouncilMember(memberId, profile, "network.config");
-        member.startServer();
+        NetworkConfig config = new NetworkConfig("network.config");
+        CouncilMember cm = new CouncilMember(memberId, profile, config);
+
+        // Start server in a new thread
+        new Thread(() -> {
+            try {
+                cm.startServer();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+
+        // If this is M2, send message to M1
+        if (memberId.equals("M2")) {
+            Thread.sleep(1000); // give server time to start
+            Message testMsg = new Message("PREPARE", "M2", "1.1", "CandidateX");
+            cm.sendMessage("M1", testMsg);
+        }
     }
+
 }
